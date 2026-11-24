@@ -1,0 +1,7 @@
+{
+  "XAUUSD": { "control_port": 8772, "bridge_port": 8770, "magic": 20261116, "ea_allow_trading": 1, "log": "logs/monitor.log" },
+  "EURUSD": { "control_port": 8781, "bridge_port": 8780, "magic": 20261120, "ea_allow_trading": 0, "log": "logs/eurusd.log" },
+  "GBPUSD": { "control_port": 8791, "bridge_port": 8790, "magic": 20261130, "ea_allow_trading": 1, "log": "logs/gbpusd.log" },
+  "US100":  { "control_port": 8801, "bridge_port": 8800, "magic": 20261140, "ea_allow_trading": 1, "log": "logs/us100.log" },
+  "XBRUSD": { "control_port": 8811, "bridge_port": 8810, "magic": 20261150, "ea_allow_trading": 1, "log": "logs/xbrusd.log" }
+}

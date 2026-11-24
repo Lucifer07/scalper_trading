@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XAU Monitor — Panel</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">XAU</span>
+      <div><strong>XAU Monitor</strong><small>panel kontrol lokal</small></div>
+    </div>
+    <nav aria-label="Menu utama">
+      <button class="nav-item is-active" data-tab="dashboard">
+        <span aria-hidden="true">◧</span> Dashboard
+      </button>
+      <button class="nav-item" data-tab="symbol">
+        <span aria-hidden="true">⇄</span> Simbol
+      </button>
+      <button class="nav-item" data-tab="logs">
+        <span aria-hidden="true">≡</span> Log
+      </button>
+      <button class="nav-item" data-tab="files">
+        <span aria-hidden="true">✎</span> File &amp; Aturan AI
+      </button>
+    </nav>
+    <label class="field instance-field">
+      <span>Simbol</span>
+      <select id="instance-select" aria-label="Pilih instance monitor">
+        <option value="">memuat…</option>
+      </select>
+    </label>
+    <div class="side-foot">
+      <div id="side-control">control: —</div>
+      <div id="side-symbol">—</div>
+      <div class="muted">Loopback only · tanpa auth</div>
+    </div>
+  </aside>
+
+  <div class="workspace">
+    <header class="topbar">
+      <div class="price-block">
+        <span class="label">Harga</span>
+        <output id="price" class="price">—</output>
+        <span id="price-delta" class="delta"></span>
+      </div>
+      <div class="pills">
+        <span id="pill-source" class="pill">sumber: —</span>
+        <span id="pill-monitor" class="pill pill-warn">monitor: —</span>
+        <span id="pill-uptime" class="pill pill-quiet">uptime —</span>
+        <button id="btn-layering" class="pill pill-quiet" type="button"
+                title="Layering otomatis: beberapa limit berlapis (AI menentukan jumlah, min 2)">layering: —</button>
+      </div>
+      <div class="top-actions">
+        <button id="btn-start" class="btn btn-ok">Start</button>
+        <button id="btn-restart" class="btn">Restart</button>
+        <button id="btn-stop" class="btn btn-danger">Stop</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="tab-dashboard" class="tab is-active" aria-labelledby="h-dashboard">
+        <div class="grid two">
+          <div class="card">
+            <div class="card-head">
+              <h2>Harga &amp; umpan</h2>
+              <span id="chart-range" class="muted">120 sampel</span>
+            </div>
+            <canvas id="spark" width="720" height="180" aria-label="Grafik harga terakhir"></canvas>
+            <dl class="metrics">
+              <div><dt>Rate</dt><dd id="m-rate">—</dd></div>
+              <div><dt>Tick MT4</dt><dd id="m-mt4">—</dd></div>
+              <div><dt>Umur tick</dt><dd id="m-age">—</dd></div>
+              <div><dt>EA bridge</dt><dd id="m-ea">—</dd></div>
+            </dl>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2>Engine &amp; order</h2></div>
+            <div id="engines" class="engine-list"><p class="muted">menunggu status…</p></div>
+            <div class="divider"></div>
+            <dl class="metrics">
+              <div><dt>Order</dt><dd id="m-orders">—</dd></div>
+              <div><dt>Broker</dt><dd id="m-broker">—</dd></div>
+              <div><dt>EA terakhir</dt><dd id="m-ea-error" class="mono small">—</dd></div>
+            </dl>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>Kesiapan trigger</h2>
+            <span class="muted small">persen gate lolos · harga target entry per mode</span>
+          </div>
+          <div id="readiness" class="ready-grid">
+            <p class="muted">menunggu snapshot candle…</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>Rencana &amp; gate</h2>            <div class="seg" role="group" aria-label="Jenis laporan">
+              <button class="seg-item is-active" data-report="planning">Planning</button>
+              <button class="seg-item" data-report="status">Status</button>
+            </div>
+            <button id="report-refresh" class="btn btn-quiet">Muat ulang</button>
+          </div>
+          <pre id="report" class="report">Laporan belum dimuat.</pre>
+        </div>
+      </section>
+
+      <section id="tab-symbol" class="tab" aria-labelledby="h-symbol">
+        <div class="card">
+          <div class="card-head">
+            <h2>Simbol monitor</h2>
+            <span id="symbol-current" class="pill pill-gold">—</span>
+          </div>
+          <p class="muted">
+            Pindah simbol tanpa restart — state engine di-reset dan history
+            di-seed ulang dari broker. Ditolak bila masih ada posisi terbuka
+            atau simbol tidak dikenal terminal.
+          </p>
+          <div class="row">
+            <input id="symbol-input" maxlength="12" placeholder="mis. EURUSD"
+                   autocomplete="off" spellcheck="false" aria-label="Simbol baru">
+            <button id="symbol-apply" class="btn btn-primary">Pindah</button>
+          </div>
+          <span id="symbol-hint" class="muted small">
+            Simbol harus tersedia di Market Watch MT4 (mis. XAUUSD, EURUSD, US100).
+          </span>
+          <div class="divider"></div>
+          <p class="muted small">
+            Sumber tick satu-satunya adalah <b>MT4</b> (bar M1 native broker lewat
+            EA bridge) — feed kantor / FIX worker sudah dipensiunkan dan tidak
+            bisa dipilih lagi.
+          </p>
+        </div>
+      </section>
+
+      <section id="tab-logs" class="tab" aria-labelledby="h-logs">
+        <div class="card card-tall">
+          <div class="card-head">
+            <h2>Log monitor</h2>
+            <div class="log-tools">
+              <label class="field">
+                <span>Sumber</span>
+                <select id="log-source">
+                  <option value="monitor">monitor.log</option>
+                  <option value="stdio">monitor.stdio.log</option>
+                </select>
+              </label>
+              <input id="log-filter" type="search" placeholder="filter teks…" aria-label="Filter log">
+              <label class="check"><input id="log-follow" type="checkbox" checked> ikuti</label>
+              <button id="log-refresh" class="btn btn-quiet">Segarkan</button>
+              <a id="log-download" class="btn btn-quiet" href="/api/logs/download?source=monitor">Unduh</a>
+            </div>
+          </div>
+          <pre id="log-view" class="log-view" tabindex="0">memuat…</pre>
+          <div class="log-foot"><span id="log-meta" class="muted">—</span></div>
+        </div>
+      </section>
+
+      <section id="tab-files" class="tab" aria-labelledby="h-files">
+        <div class="grid files">
+          <div class="card">
+            <div class="card-head"><h2>File</h2><button id="files-refresh" class="btn btn-quiet">↻</button></div>
+            <div id="file-list" class="file-list"><p class="muted">memuat…</p></div>
+          </div>
+          <div class="card editor-card">
+            <div class="card-head">
+              <h2 id="editor-title">Pilih file</h2>
+              <span id="editor-badge" class="pill pill-quiet">—</span>
+            </div>
+            <p id="editor-meta" class="muted small">—</p>
+            <textarea id="editor" class="editor" spellcheck="false" disabled
+                      aria-label="Isi file"></textarea>
+            <div class="row">
+              <button id="editor-save" class="btn btn-primary" disabled>Simpan</button>
+              <button id="editor-reload" class="btn btn-quiet" disabled>Muat ulang</button>
+              <label class="check"><input id="editor-force" type="checkbox"> timpa paksa</label>
+              <span id="editor-status" class="muted small"></span>
+            </div>
+            <p class="muted small">
+              Nilai rahasia di <code>.env</code> disensor sebagai
+              <code>__KEEP_SECRET__</code>; biarkan apa adanya agar token lama tidak hilang.
+              Setiap penyimpanan membuat backup di <code>.backups/</code>.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</div>
+<script type="module" src="/app.js"></script>
+</body>
+</html>
